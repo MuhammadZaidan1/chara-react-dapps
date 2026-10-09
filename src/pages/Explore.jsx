@@ -17,9 +17,9 @@ export default function Explore() {
   if (error) {
     return (
       <div className="card text-center py-12">
-        <p className="text-danger mb-4">Gagal memuat daftar acara</p>
+        <p className="text-danger mb-4">Failed to load events list</p>
         <button onClick={() => refetch()} className="btn btn-primary">
-          Coba Lagi
+          Try Again
         </button>
       </div>
     );
@@ -33,7 +33,7 @@ export default function Explore() {
             Explore Events
           </h1>
           <p className="text-text-secondary mt-1">
-            Temukan acara menarik di Robinhood Chain Testnet
+            Discover interesting events on Robinhood Chain Testnet
           </p>
         </div>
       </div>
@@ -43,11 +43,11 @@ export default function Explore() {
           <svg className="mx-auto h-12 w-12 xs:h-10 xs:w-10 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
-          <h3 className="mt-4 text-heading-md text-text-primary xs:text-heading-sm">Belum ada acara</h3>
-          <p className="mt-2 text-text-secondary xs:text-sm">Jadilah yang pertama membuat acara melalui Organizer dashboard</p>
+          <h3 className="mt-4 text-heading-md text-text-primary xs:text-heading-sm">No events yet</h3>
+          <p className="mt-2 text-text-secondary xs:text-sm">Be the first to create an event via Organizer dashboard</p>
         </div>
       ) : (
-        <div className="grid gap-4 xs:gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 xs:gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((address) => (
             <EventCardItem key={address} address={address} />
           ))}
@@ -66,12 +66,12 @@ function EventCardItem({ address }) {
   const times = timesQuery.data;
 
   let imageUrl = '';
-  let eventName = 'Memuat Acara...';
+  let eventName = 'Loading Event...';
   let location = '';
   let startTime = times?.eventStartTime;
 
   if (eventMetadata) {
-    eventName = eventMetadata.name || 'Acara Tanpa Nama';
+    eventName = eventMetadata.name || 'Unnamed Event';
     location = eventMetadata.location || '';
     imageUrl = eventMetadata.image ? eventMetadata.image.replace('ipfs://', '') : '';
   }

@@ -65,13 +65,13 @@ export function GateScanner({ eventAddress, isEventRunning }) {
 
     try {
       const parsed = parseQRPayload(decodedText);
-      if (!parsed) throw new Error('Format QR tidak dikenali (Bukan tiket Chara)');
+      if (!parsed) throw new Error('QR format not recognized (Not a Chara ticket)');
       if (parsed.contractAddress.toLowerCase() !== eventAddress.toLowerCase()) {
-        throw new Error(`Tiket DITOLAK: Tiket ini untuk acara lain! (${shortAddress(parsed.contractAddress)})`);
+        throw new Error(`Ticket REJECTED: Ticket for another event! (${shortAddress(parsed.contractAddress)})`);
       }
 
       const tokenIdStr = parsed.tokenId.toString();
-      if (scannedTokens.has(tokenIdStr)) throw new Error(`Tiket #${tokenIdStr} SUDAH DIGUNAKAN!`);
+      if (scannedTokens.has(tokenIdStr)) throw new Error(`Ticket #${tokenIdStr} ALREADY USED!`);
 
       const owner = await readContract({
         address: eventAddress,
@@ -84,7 +84,7 @@ export function GateScanner({ eventAddress, isEventRunning }) {
         valid: true,
         tokenId: tokenIdStr,
         holder: owner,
-        reason: `Tiket #${tokenIdStr} VALID!`,
+        reason: `Ticket #${tokenIdStr} VALID!`,
         timestamp: Date.now(),
         raw: decodedText
       };
@@ -100,7 +100,7 @@ export function GateScanner({ eventAddress, isEventRunning }) {
 
     } catch (e) {
       const errorResult = { 
-        valid: false, tokenId: '-', holder: '-', reason: e.message || 'Gagal validasi', timestamp: Date.now(), raw: decodedText
+        valid: false, tokenId: '-', holder: '-', reason: e.message || 'Validation failed', timestamp: Date.now(), raw: decodedText
       };
       setLastScan(errorResult);
       setScanLogs(prev => { const n = [errorResult, ...prev.slice(0, 99)]; saveLogs(n); return n; });
@@ -138,7 +138,7 @@ export function GateScanner({ eventAddress, isEventRunning }) {
   };
 
   const clearLogs = () => {
-    if (window.confirm('Yakin ingin menghapus riwayat di perangkat ini?')) {
+    if (window.confirm('Clear history on this device?')) {
       setScanLogs([]); setScannedTokens(new Set()); setLastScan(null);
       sessionStorage.removeItem(`scanner_logs_${eventAddress}`);
       sessionStorage.removeItem(`scanned_tokens_${eventAddress}`);
@@ -181,7 +181,7 @@ export function GateScanner({ eventAddress, isEventRunning }) {
       <Card className="space-y-3 xs:space-y-2 lg:space-y-4 p-4 xs:p-6 bg-surface border-border">
         <div 
           className={`w-full max-w-full mx-auto rounded-xl overflow-hidden border-2 relative flex flex-col items-center justify-center transition-all duration-300 ${isCameraActive ? 'bg-black border-primary' : 'bg-background border-border border-dashed'}`} 
-          style={{ aspectRatio: '4/3', maxWidth: '50%' }}
+          style={{ aspectRatio: '4/3', maxWidth: '40%' }}
         >
           {!isEventRunning ? (
             // EVENT NOT RUNNING STATE
@@ -191,8 +191,8 @@ export function GateScanner({ eventAddress, isEventRunning }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <p className="text-text-primary font-semibold mb-1">Akses Kamera Ditutup</p>
-              <p className="text-sm text-text-secondary">Fitur scanner hanya dapat digunakan saat event sedang berlangsung.</p>
+              <p className="text-text-primary font-semibold mb-1">Camera Access Closed</p>
+              <p className="text-sm text-text-secondary">Scanner only available while event is running.</p>
             </div>
           ) : cameraError ? (
             // CAMERA ERROR STATE
@@ -202,9 +202,9 @@ export function GateScanner({ eventAddress, isEventRunning }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <p className="text-danger font-semibold mb-2">Gagal Mengakses Kamera</p>
+              <p className="text-danger font-semibold mb-2">Failed to Access Camera</p>
               <p className="text-xs text-text-muted mb-4">{cameraError}</p>
-              <Button size="sm" onClick={() => { setCameraError(null); setScannerMode(true); }}>Coba Lagi</Button>
+              <Button size="sm" onClick={() => { setCameraError(null); setScannerMode(true); }}>Try Again</Button>
             </div>
           ) : !scannerMode ? (
             // IDLE STATE (Ready to Start)
@@ -215,8 +215,8 @@ export function GateScanner({ eventAddress, isEventRunning }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <p className="text-text-secondary mb-4 text-sm">Kamera sedang non-aktif.</p>
-              <Button onClick={toggleScanner}>Buka Kamera</Button>
+              <p className="text-text-secondary mb-4 text-sm">Camera is inactive.</p>
+              <Button onClick={toggleScanner}>Open Camera</Button>
             </div>
           ) : (
             // ACTIVE SCANNER STATE
@@ -231,7 +231,7 @@ export function GateScanner({ eventAddress, isEventRunning }) {
               />
               <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                 <span className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs">
-                  Arahkan ke QR Code tiket
+                  Point at ticket QR Code
                 </span>
               </div>
             </>
@@ -244,22 +244,22 @@ export function GateScanner({ eventAddress, isEventRunning }) {
         <Card className={`border-${lastScan.valid ? 'success' : 'danger'} shadow-sm`}>
           <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 mb-2 xs:mb-2 lg:mb-2 border-b border-border/50 pb-2">
             <h3 className="font-semibold text-text-primary flex items-center gap-2 xs:text-sm">
-              Status Pemindaian: 
-              <span className={`font-bold px-2 py-0.5 rounded text-white xs:px-1.5 xs:py-0.25 ${lastScan.valid ? 'bg-success' : 'bg-danger'}`}>
-                {lastScan.valid ? 'VALID (DIIZINKAN MASUK)' : 'INVALID (DITOLAK)'}
+              Scan Status: 
+              <span className={`font-bold px-2 py-0.5 rounded text-white xs:px-1.5 xs:py-px ${lastScan.valid ? 'bg-success' : 'bg-danger'}`}>
+                {lastScan.valid ? 'VALID (ENTRY ALLOWED)' : 'INVALID (REJECTED)'}
               </span>
             </h3>
             <span className="text-xs xs:text-[11px] text-text-muted">{formatTime(Math.floor(lastScan.timestamp / 1000))}</span>
           </div>
           <div className="space-y-2 mt-3 xs:mt-2">
-            <p className="text-sm xs:text-xs"><strong>Pesan:</strong> {lastScan.reason}</p>
+            <p className="text-sm xs:text-xs"><strong>Message:</strong> {lastScan.reason}</p>
             <div className="grid grid-cols-2 gap-3 xs:gap-2 text-sm xs:text-xs bg-background p-3 xs:p-2 rounded-md">
               <div>
                 <p className="text-text-muted text-xs xs:text-[11px]">Token ID</p>
                 <p className="font-mono">{lastScan.tokenId}</p>
               </div>
               <div>
-                <p className="text-text-muted text-xs xs:text-[11px]">Pemilik Tiket</p>
+                <p className="text-text-muted text-xs xs:text-[11px]">Ticket Holder</p>
                 <p className="font-mono truncate">{lastScan.holder}</p>
               </div>
             </div>
@@ -269,22 +269,23 @@ export function GateScanner({ eventAddress, isEventRunning }) {
 
       {/* HISTORY TABLE */}
       <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 mt-4 xs:mt-3">
-        <h3 className="text-heading-md xs:text-heading-sm font-semibold text-text-primary">Riwayat Check-In ({scanLogs.length})</h3>
+        <h3 className="text-heading-md xs:text-heading-sm font-semibold text-text-primary">Check-In History ({scanLogs.length})</h3>
       </div>
       
       <div className="overflow-x-auto bg-surface border border-border rounded-lg">
         <table className="w-full text-sm xs:text-xs">
           <thead>
             <tr className="border-b border-border text-left text-text-muted bg-background">
-              <th className="py-2 xs:py-1.5 px-3 xs:px-2 font-medium">Waktu</th>
+              <th className="py-2 xs:py-1.5 px-3 xs:px-2 font-medium">Time</th>
               <th className="py-2 xs:py-1.5 px-3 xs:px-2 font-medium">Token ID</th>
-              <th className="py-2 xs:py-1.5 px-3 xs:px-2 font-medium">Status / Pesan</th>
+              <th className="py-2 xs:py-1.5 px-3 xs:px-2 font-medium">Ticket Holder</th>
+              <th className="py-2 xs:py-1.5 px-3 xs:px-2 font-medium">Status / Message</th>
             </tr>
           </thead>
           <tbody>
             {!scanLogs.length ? (
               <tr>
-                <td colSpan="3" className="text-center py-6 xs:py-4 text-text-muted">Belum ada tiket yang ter-scan</td>
+                <td colSpan="4" className="text-center py-6 xs:py-4 text-text-muted">No tickets scanned yet</td>
               </tr>
             ) : (
               scanLogs.map((log, idx) => (
@@ -294,6 +295,9 @@ export function GateScanner({ eventAddress, isEventRunning }) {
                   </td>
                   <td className="py-2 xs:py-1.5 px-3 xs:px-2 font-mono font-medium">
                     #{log.tokenId}
+                  </td>
+                  <td className="py-2 xs:py-1.5 px-3 xs:px-2 font-mono truncate">
+                    {shortAddress(log.holder)}
                   </td>
                   <td className="py-2 xs:py-1.5 px-3 xs:px-2">
                     <div className="flex items-center gap-2 xs:gap-1.5">
@@ -310,7 +314,7 @@ export function GateScanner({ eventAddress, isEventRunning }) {
 
       <details className="mt-6 xs:mt-4 lg:mt-8 border border-border rounded-lg bg-background">
         <summary className="p-3 xs:p-4 cursor-pointer flex items-center justify-between text-sm xs:text-xs font-medium text-text-secondary">
-          <span>Informasi Debugging Kamera</span>
+          <span>Camera Debug Info</span>
           <svg className="w-4 h-4 xs:w-3.5 xs:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -318,11 +322,11 @@ export function GateScanner({ eventAddress, isEventRunning }) {
         <div className="p-3 xs:p-4 border-t border-border text-xs xs:text-[11px] font-mono text-text-muted space-y-2 overflow-auto">
           <div><strong>Browser:</strong> {getBrowserName()}</div>
           <div><strong>Secure Context (HTTPS):</strong> {String(isSecure)}</div>
-          <div><strong>Kamera Aktif:</strong> {String(isCameraActive)}</div>
+          <div><strong>Camera Active:</strong> {String(isCameraActive)}</div>
           {debugInfo.lastError && (
             <div className="text-danger mt-2">
-              <strong>Error Terakhir:</strong> {debugInfo.lastError} <br/>
-              <span className="text-text-muted">Waktu: {debugInfo.errorTime}</span>
+              <strong>Last Error:</strong> {debugInfo.lastError} <br/>
+              <span className="text-text-muted">Time: {debugInfo.errorTime}</span>
             </div>
           )}
         </div>
