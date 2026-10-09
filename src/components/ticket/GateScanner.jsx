@@ -1,0 +1,331 @@
+import { useState, useCallback, useRef } from 'react';
+import { Scanner } from '@yudiel/react-qr-scanner';
+import { readContract } from '../../utils/viemHelpers.js';
+import { ABIS } from '../../config/index.js';
+import { parseQRPayload } from '../../utils/qr.js';
+import { Button, Card, Badge } from '../../components/ui/index.js';
+import { formatTime, shortAddress } from '../../utils/formatters.js';
+
+function getBrowserName() {
+  if (typeof navigator === 'undefined') return 'Unknown';
+  const ua = navigator.userAgent;
+  if (ua.includes('Edg/')) return 'Edge';
+  if (ua.includes('Chrome/') && !ua.includes('Edg/')) return 'Chrome';
+  if (ua.includes('Firefox/')) return 'Firefox';
+  if (ua.includes('Safari/') && !ua.includes('Chrome/')) return 'Safari';
+  return 'Unknown';
+}
+
+export function GateScanner({ eventAddress, isEventRunning }) {
+  const [scannerMode, setScannerMode] = useState(false);
+  const [lastScan, setLastScan] = useState(null);
+  const [cameraError, setCameraError] = useState(null);
+  const [debugInfo, setDebugInfo] = useState({});
+  
+  // Storage states
+  const [scanLogs, setScanLogs] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem(`scanner_logs_${eventAddress}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+  
+  const [scannedTokens, setScannedTokens] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem(`scanned_tokens_${eventAddress}`);
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const lastScannedTextRef = useRef(null);
+  const lastScannedTimeRef = useRef(0);
+  const isProcessingRef = useRef(false);
+
+  const saveLogs = useCallback((logs) => {
+    try {
+      sessionStorage.setItem(`scanner_logs_${eventAddress}`, JSON.stringify(logs.slice(0, 99)));
+    } catch { /* empty */ }
+  }, [eventAddress]);
+
+  const handleScan = useCallback(async (result) => {
+    const decodedText = Array.isArray(result) ? result[0]?.rawValue : result?.text || result;
+    
+    if (typeof decodedText !== 'string' || !decodedText || isProcessingRef.current) return;
+
+    const now = Date.now();
+    if (lastScannedTextRef.current === decodedText && now - lastScannedTimeRef.current < 3000) return; 
+
+    lastScannedTextRef.current = decodedText;
+    lastScannedTimeRef.current = now;
+    isProcessingRef.current = true;
+
+    try {
+      const parsed = parseQRPayload(decodedText);
+      if (!parsed) throw new Error('Format QR tidak dikenali (Bukan tiket Chara)');
+      if (parsed.contractAddress.toLowerCase() !== eventAddress.toLowerCase()) {
+        throw new Error(`Tiket DITOLAK: Tiket ini untuk acara lain! (${shortAddress(parsed.contractAddress)})`);
+      }
+
+      const tokenIdStr = parsed.tokenId.toString();
+      if (scannedTokens.has(tokenIdStr)) throw new Error(`Tiket #${tokenIdStr} SUDAH DIGUNAKAN!`);
+
+      const owner = await readContract({
+        address: eventAddress,
+        abi: ABIS.eventTicket,
+        functionName: 'ownerOf',
+        args: [parsed.tokenId],
+      });
+
+      const successResult = {
+        valid: true,
+        tokenId: tokenIdStr,
+        holder: owner,
+        reason: `Tiket #${tokenIdStr} VALID!`,
+        timestamp: Date.now(),
+        raw: decodedText
+      };
+
+      setLastScan(successResult);
+      setScanLogs(prev => { const n = [successResult, ...prev.slice(0, 99)]; saveLogs(n); return n; });
+      setScannedTokens(prev => {
+        const newSet = new Set(prev);
+        newSet.add(tokenIdStr);
+        try { sessionStorage.setItem(`scanned_tokens_${eventAddress}`, JSON.stringify(Array.from(newSet))); } catch { /* empty */ }
+        return newSet;
+      });
+
+    } catch (e) {
+      const errorResult = { 
+        valid: false, tokenId: '-', holder: '-', reason: e.message || 'Gagal validasi', timestamp: Date.now(), raw: decodedText
+      };
+      setLastScan(errorResult);
+      setScanLogs(prev => { const n = [errorResult, ...prev.slice(0, 99)]; saveLogs(n); return n; });
+    } finally {
+      isProcessingRef.current = false;
+    }
+  }, [eventAddress, scannedTokens, saveLogs]);
+
+  const handleError = useCallback((error) => {
+    const errMsg = error?.message || String(error);
+    setCameraError(errMsg);
+    setScannerMode(false); // Matikan state scanner saat error
+    setDebugInfo(prev => ({ ...prev, lastError: errMsg, errorTime: new Date().toISOString() }));
+  }, []);
+
+  const toggleScanner = () => {
+    setScannerMode(!scannerMode);
+    setCameraError(null);
+  };
+
+  const exportLogs = () => {
+    const csv = [
+      ['Timestamp', 'Token ID', 'Holder', 'Status', 'Message', 'Raw Payload'],
+      ...scanLogs.map(log => [
+        new Date(log.timestamp).toISOString(), log.tokenId, log.holder, log.valid ? 'Valid' : 'Invalid', log.reason, log.raw || '-'
+      ]),
+    ].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gate-scanner-${eventAddress.slice(0,6)}-${Date.now()}.csv`;
+    a.click();
+  };
+
+  const clearLogs = () => {
+    if (window.confirm('Yakin ingin menghapus riwayat di perangkat ini?')) {
+      setScanLogs([]); setScannedTokens(new Set()); setLastScan(null);
+      sessionStorage.removeItem(`scanner_logs_${eventAddress}`);
+      sessionStorage.removeItem(`scanned_tokens_${eventAddress}`);
+    }
+  };
+
+  const isSecure = typeof window !== 'undefined' ? window.isSecureContext : true;
+  const isCameraActive = scannerMode && !cameraError && isEventRunning;
+
+  return (
+    <div className="space-y-6">
+      {/* HEADER SECTION */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <h2 className="text-heading-lg font-semibold text-text-primary">Gate Scanner</h2>
+          <Badge variant={!isEventRunning ? 'warning' : isCameraActive ? 'success' : cameraError ? 'danger' : 'default'} className="ml-2">
+            {!isEventRunning ? 'Disabled' : isCameraActive ? 'Active' : cameraError ? 'Error' : 'Idle'}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button 
+            variant={scannerMode ? 'danger' : 'primary'} 
+            onClick={toggleScanner}
+            disabled={!isEventRunning}
+          >
+            {scannerMode ? 'Stop Scanner' : 'Start Scanner'}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={exportLogs} disabled={!scanLogs.length}>
+            Export CSV
+          </Button>
+          {/* Clear Button disabled kalau event nggak jalan, biar data aman */}
+          <Button variant="ghost" size="sm" onClick={clearLogs} disabled={!scanLogs.length || !isEventRunning}>
+            Clear Logs
+          </Button>
+        </div>
+      </div>
+
+      {/* FIXED CAMERA PANEL */}
+      <Card className="space-y-4 p-6 bg-surface border-border">
+        <div 
+          className={`w-full max-w-100 mx-auto rounded-xl overflow-hidden border-2 relative flex flex-col items-center justify-center transition-all duration-300 ${isCameraActive ? 'bg-black border-primary' : 'bg-background border-border border-dashed'}`} 
+          style={{ aspectRatio: '4/3' }}
+        >
+          {!isEventRunning ? (
+            // EVENT NOT RUNNING STATE
+            <div className="text-center p-6 flex flex-col items-center justify-center h-full">
+              <div className="w-16 h-16 bg-warning/10 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <p className="text-text-primary font-semibold mb-1">Akses Kamera Ditutup</p>
+              <p className="text-sm text-text-secondary">Fitur scanner hanya dapat digunakan saat event sedang berlangsung.</p>
+            </div>
+          ) : cameraError ? (
+            // CAMERA ERROR STATE
+            <div className="text-center p-6 flex flex-col items-center justify-center h-full bg-danger/5 w-full">
+              <div className="w-16 h-16 bg-danger/10 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <p className="text-danger font-semibold mb-2">Gagal Mengakses Kamera</p>
+              <p className="text-xs text-text-muted mb-4">{cameraError}</p>
+              <Button size="sm" onClick={() => { setCameraError(null); setScannerMode(true); }}>Coba Lagi</Button>
+            </div>
+          ) : !scannerMode ? (
+            // IDLE STATE (Ready to Start)
+            <div className="text-center p-6 flex flex-col items-center justify-center h-full w-full">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <p className="text-text-secondary mb-4 text-sm">Kamera sedang non-aktif.</p>
+              <Button onClick={toggleScanner}>Buka Kamera</Button>
+            </div>
+          ) : (
+            // ACTIVE SCANNER STATE
+            <>
+              <Scanner
+                onScan={handleScan}
+                onError={handleError}
+                formats={['qr_code']}
+                constraints={{ width: { ideal: 640, max: 1920 }, height: { ideal: 480, max: 1080 } }}
+                components={{ audio: false, onOff: false, torch: false, zoom: false, finder: true }}
+                styles={{ container: { width: '100%', height: '100%' }, video: { objectFit: 'cover' } }}
+              />
+              <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+                <span className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs">
+                  Arahkan ke QR Code tiket
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
+
+      {/* SCAN RESULT CARD */}
+      {lastScan && (
+        <Card className={`border-${lastScan.valid ? 'success' : 'danger'} shadow-sm`}>
+          <div className="flex items-center justify-between mb-2 border-b border-border/50 pb-2">
+            <h3 className="font-semibold text-text-primary flex items-center gap-2">
+              Status Pemindaian: 
+              <span className={`font-bold px-2 py-0.5 rounded text-white ${lastScan.valid ? 'bg-success' : 'bg-danger'}`}>
+                {lastScan.valid ? 'VALID (DIIZINKAN MASUK)' : 'INVALID (DITOLAK)'}
+              </span>
+            </h3>
+            <span className="text-xs text-text-muted">{formatTime(Math.floor(lastScan.timestamp / 1000))}</span>
+          </div>
+          <div className="space-y-2 mt-3">
+            <p className="text-sm"><strong>Pesan:</strong> {lastScan.reason}</p>
+            <div className="grid grid-cols-2 gap-4 text-sm bg-background p-3 rounded-md">
+              <div>
+                <p className="text-text-muted text-xs">Token ID</p>
+                <p className="font-mono">{lastScan.tokenId}</p>
+              </div>
+              <div>
+                <p className="text-text-muted text-xs">Pemilik Tiket</p>
+                <p className="font-mono truncate">{lastScan.holder}</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* HISTORY TABLE */}
+      <div className="flex items-center justify-between mt-4">
+        <h3 className="text-heading-md font-semibold text-text-primary">Riwayat Check-In ({scanLogs.length})</h3>
+      </div>
+      
+      <div className="overflow-x-auto bg-surface border border-border rounded-lg">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-text-muted bg-background">
+              <th className="py-3 px-4 font-medium">Waktu</th>
+              <th className="py-3 px-4 font-medium">Token ID</th>
+              <th className="py-3 px-4 font-medium">Status / Pesan</th>
+            </tr>
+          </thead>
+          <tbody>
+            {!scanLogs.length ? (
+              <tr>
+                <td colSpan="3" className="text-center py-8 text-text-muted">Belum ada tiket yang ter-scan</td>
+              </tr>
+            ) : (
+              scanLogs.map((log, idx) => (
+                <tr key={idx} className="border-b border-border/30 hover:bg-background/50 transition-colors">
+                  <td className="py-3 px-4 text-text-muted whitespace-nowrap">
+                    {formatTime(Math.floor(log.timestamp / 1000))}
+                  </td>
+                  <td className="py-3 px-4 font-mono font-medium">
+                    #{log.tokenId}
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${log.valid ? 'bg-success' : 'bg-danger'}`} />
+                      <span className={log.valid ? 'text-text-primary' : 'text-danger'}>{log.reason}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <details className="mt-8 border border-border rounded-lg bg-background">
+        <summary className="p-4 cursor-pointer flex items-center justify-between text-sm font-medium text-text-secondary">
+          <span>Informasi Debugging Kamera</span>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <div className="p-4 border-t border-border text-xs font-mono text-text-muted space-y-2 overflow-auto">
+          <div><strong>Browser:</strong> {getBrowserName()}</div>
+          <div><strong>Secure Context (HTTPS):</strong> {String(isSecure)}</div>
+          <div><strong>Kamera Aktif:</strong> {String(isCameraActive)}</div>
+          {debugInfo.lastError && (
+            <div className="text-danger mt-2">
+              <strong>Error Terakhir:</strong> {debugInfo.lastError} <br/>
+              <span className="text-text-muted">Waktu: {debugInfo.errorTime}</span>
+            </div>
+          )}
+        </div>
+      </details>
+    </div>
+  );
+}

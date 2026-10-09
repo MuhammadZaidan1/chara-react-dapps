@@ -1,0 +1,19 @@
+export const CONTRACT_CONSTANTS = {
+  PRIMARY_FEE_BPS: 200,
+  SECONDARY_PLATFORM_BPS: 400,
+  SECONDARY_EO_ROYALTY_BPS: 600,
+  HOLDBACK_BPS: 2000,
+  MAX_BATCH_MINT: 5,
+  MAX_TIERS: 20,
+  RESALE_CAP_MULTIPLIER: 2,
+  FAUCET_AMOUNT: 1000 * 1e6,
+  USDG_DECIMALS: 6,
+};
+
+export const QR_SCANNER_CONFIG = {
+  timestampToleranceMs: 3 * 60 * 1000,
+};
+
+export const DRAFT_STORAGE_KEY = 'chara:drafts';
+
+export const TOAST_DURATION = 8000;
