@@ -68,38 +68,38 @@ export default function GetStarted() {
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="text-center">
-        <h1 className="text-display-lg font-display font-bold text-text-primary">
+        <h1 className="text-display-lg xs:text-display-md font-display font-bold text-text-primary">
           Get Started
         </h1>
-        <p className="text-text-secondary mt-2">
+        <p className="text-text-secondary xs:text-sm mt-2">
           Set up your wallet for the RWA Smart Ticket platform
         </p>
       </div>
 
-      <Card className="space-y-6">
-        <h2 className="text-heading-md font-semibold text-text-primary">Network Info</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="bg-background rounded-lg p-4">
-            <p className="text-caption text-text-muted">Chain ID</p>
-            <p className="font-mono text-text-primary">46630</p>
+      <Card className="space-y-4 xs:space-y-3">
+        <h2 className="text-heading-md xs:text-heading-sm font-semibold text-text-primary">Network Info</h2>
+        <div className="grid gap-3 xs:gap-2 sm:gap-4 sm:grid-cols-2">
+          <div className="bg-background rounded-lg p-3 xs:p-4">
+            <p className="text-caption xs:text-[11px] text-text-muted">Chain ID</p>
+            <p className="font-mono text-text-primary xs:text-sm">46630</p>
           </div>
-          <div className="bg-background rounded-lg p-4">
-            <p className="text-caption text-text-muted">Network</p>
-            <p className="font-mono text-text-primary">Robinhood Chain Testnet</p>
+          <div className="bg-background rounded-lg p-3 xs:p-4">
+            <p className="text-caption xs:text-[11px] text-text-muted">Network</p>
+            <p className="font-mono text-text-primary xs:text-sm">Robinhood Chain Testnet</p>
           </div>
-          <div className="bg-background rounded-lg p-4">
-            <p className="text-caption text-text-muted">RPC URL</p>
-            <p className="font-mono text-xs text-text-primary truncate">
+          <div className="bg-background rounded-lg p-3 xs:p-4">
+            <p className="text-caption xs:text-[11px] text-text-muted">RPC URL</p>
+            <p className="font-mono text-xs xs:text-sm text-text-primary truncate">
               https://robinhood-testnet.g.alchemy.com/v2/kuKmwsoR515lVdX5RgLKf
             </p>
           </div>
-          <div className="bg-background rounded-lg p-4">
-            <p className="text-caption text-text-muted">Explorer</p>
+          <div className="bg-background rounded-lg p-3 xs:p-4">
+            <p className="text-caption xs:text-[11px] text-text-muted">Explorer</p>
             <a 
               href="https://explorer.testnet.chain.robinhood.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="font-mono text-xs text-primary hover:underline truncate block"
+              className="font-mono text-xs xs:text-sm text-primary hover:underline truncate block"
             >
               explorer.testnet.chain.robinhood.com
             </a>
@@ -107,13 +107,13 @@ export default function GetStarted() {
         </div>
       </Card>
 
-      <Card className="space-y-6">
-        <h2 className="text-heading-md font-semibold text-text-primary">Wallet Status</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-background rounded-lg">
+      <Card className="space-y-4 xs:space-y-3">
+        <h2 className="text-heading-md xs:text-heading-sm font-semibold text-text-primary">Wallet Status</h2>
+        <div className="space-y-3 xs:space-y-2">
+          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 p-3 xs:p-4 bg-background rounded-lg">
             <div>
-              <p className="text-caption text-text-muted">Address</p>
-              <p className="font-mono text-text-primary">
+              <p className="text-caption xs:text-[11px] text-text-muted">Address</p>
+              <p className="font-mono text-text-primary xs:text-sm">
                 {isConnected ? shortAddress(walletClient.account.address) : 'Not connected'}
               </p>
             </div>
@@ -124,10 +124,10 @@ export default function GetStarted() {
             )}
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-background rounded-lg">
+          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 p-3 xs:p-4 bg-background rounded-lg">
             <div>
-              <p className="text-caption text-text-muted">MockUSDG Balance</p>
-              <p className="font-mono text-text-primary">
+              <p className="text-caption xs:text-[11px] text-text-muted">MockUSDG Balance</p>
+              <p className="font-mono text-text-primary xs:text-sm">
                 {isConnected ? (balance ? formatUSDG(balance) : '0') : '...'} mUSDG
               </p>
             </div>
@@ -135,8 +135,8 @@ export default function GetStarted() {
         </div>
       </Card>
 
-      <Card className="space-y-6">
-        <h2 className="text-heading-md font-semibold text-text-primary">Quick Actions</h2>
+      <Card className="space-y-4 xs:space-y-3">
+        <h2 className="text-heading-md xs:text-heading-sm font-semibold text-text-primary">Quick Actions</h2>
         
         {!isConnected ? (
            <div className="text-center p-6 bg-background rounded-lg border border-border border-dashed">
@@ -145,7 +145,7 @@ export default function GetStarted() {
            </div>
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 xs:gap-2 sm:grid-cols-2">
               <Button 
                 onClick={handleClaimFaucet} 
                 disabled={claiming}
@@ -165,7 +165,7 @@ export default function GetStarted() {
                 {verifying ? 'Verifying...' : isVerified ? 'Already Verified' : 'Verify Me'}
               </Button>
             </div>
-            <p className="text-caption text-text-muted text-center">
+            <p className="text-caption xs:text-[11px] text-text-muted text-center">
               MockUSDG has 6 decimals. Faucet gives 1,000 mUSDG per call.
             </p>
           </>
@@ -173,9 +173,9 @@ export default function GetStarted() {
       </Card>
       
       {/*... Sisa kode kontrak deployed ...*/}
-      <Card className="space-y-4">
-        <h2 className="text-heading-md font-semibold text-text-primary">Deployed Contracts</h2>
-        <div className="space-y-2 text-sm">
+      <Card className="space-y-3 xs:space-y-2">
+        <h2 className="text-heading-md xs:text-heading-sm font-semibold text-text-primary">Deployed Contracts</h2>
+        <div className="space-y-2 xs:space-y-1.5 text-sm xs:text-xs">
           <div className="flex items-center justify-between p-3 bg-background rounded-lg">
             <span className="text-text-secondary">TicketFactory</span>
             <a 

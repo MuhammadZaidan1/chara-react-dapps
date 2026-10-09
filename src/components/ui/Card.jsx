@@ -2,7 +2,7 @@ export default function Card({
   children, 
   className = '', 
   hover = false,
-  padding = 'p-6',
+  padding = 'p-4 sm:p-6',
   ...props 
 }) {
   return (

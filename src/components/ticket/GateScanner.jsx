@@ -149,38 +149,39 @@ export function GateScanner({ eventAddress, isEventRunning }) {
   const isCameraActive = scannerMode && !cameraError && isEventRunning;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 xs:space-y-3 lg:space-y-6">
       {/* HEADER SECTION */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-heading-lg font-semibold text-text-primary">Gate Scanner</h2>
-          <Badge variant={!isEventRunning ? 'warning' : isCameraActive ? 'success' : cameraError ? 'danger' : 'default'} className="ml-2">
+      <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between flex-wrap gap-3 xs:gap-2">
+        <div className="flex items-center gap-3 xs:gap-2">
+          <h2 className="text-heading-lg xs:text-heading-md font-semibold text-text-primary">Gate Scanner</h2>
+          <Badge variant={!isEventRunning ? 'warning' : isCameraActive ? 'success' : cameraError ? 'danger' : 'default'} className="ml-2 xs:ml-1.5">
             {!isEventRunning ? 'Disabled' : isCameraActive ? 'Active' : cameraError ? 'Error' : 'Idle'}
           </Badge>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 xs:gap-1.5 flex-wrap w-full xs:w-auto">
           <Button 
             variant={scannerMode ? 'danger' : 'primary'} 
             onClick={toggleScanner}
             disabled={!isEventRunning}
+            className="w-full xs:w-auto"
           >
             {scannerMode ? 'Stop Scanner' : 'Start Scanner'}
           </Button>
-          <Button variant="secondary" size="sm" onClick={exportLogs} disabled={!scanLogs.length}>
+          <Button variant="secondary" size="sm" onClick={exportLogs} disabled={!scanLogs.length} className="w-full xs:w-auto">
             Export CSV
           </Button>
           {/* Clear Button disabled kalau event nggak jalan, biar data aman */}
-          <Button variant="ghost" size="sm" onClick={clearLogs} disabled={!scanLogs.length || !isEventRunning}>
+          <Button variant="ghost" size="sm" onClick={clearLogs} disabled={!scanLogs.length || !isEventRunning} className="w-full xs:w-auto">
             Clear Logs
           </Button>
         </div>
       </div>
 
       {/* FIXED CAMERA PANEL */}
-      <Card className="space-y-4 p-6 bg-surface border-border">
+      <Card className="space-y-3 xs:space-y-2 lg:space-y-4 p-4 xs:p-6 bg-surface border-border">
         <div 
-          className={`w-full max-w-100 mx-auto rounded-xl overflow-hidden border-2 relative flex flex-col items-center justify-center transition-all duration-300 ${isCameraActive ? 'bg-black border-primary' : 'bg-background border-border border-dashed'}`} 
-          style={{ aspectRatio: '4/3' }}
+          className={`w-full max-w-full mx-auto rounded-xl overflow-hidden border-2 relative flex flex-col items-center justify-center transition-all duration-300 ${isCameraActive ? 'bg-black border-primary' : 'bg-background border-border border-dashed'}`} 
+          style={{ aspectRatio: '4/3', maxWidth: '50%' }}
         >
           {!isEventRunning ? (
             // EVENT NOT RUNNING STATE
@@ -241,24 +242,24 @@ export function GateScanner({ eventAddress, isEventRunning }) {
       {/* SCAN RESULT CARD */}
       {lastScan && (
         <Card className={`border-${lastScan.valid ? 'success' : 'danger'} shadow-sm`}>
-          <div className="flex items-center justify-between mb-2 border-b border-border/50 pb-2">
-            <h3 className="font-semibold text-text-primary flex items-center gap-2">
+          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 mb-2 xs:mb-2 lg:mb-2 border-b border-border/50 pb-2">
+            <h3 className="font-semibold text-text-primary flex items-center gap-2 xs:text-sm">
               Status Pemindaian: 
-              <span className={`font-bold px-2 py-0.5 rounded text-white ${lastScan.valid ? 'bg-success' : 'bg-danger'}`}>
+              <span className={`font-bold px-2 py-0.5 rounded text-white xs:px-1.5 xs:py-0.25 ${lastScan.valid ? 'bg-success' : 'bg-danger'}`}>
                 {lastScan.valid ? 'VALID (DIIZINKAN MASUK)' : 'INVALID (DITOLAK)'}
               </span>
             </h3>
-            <span className="text-xs text-text-muted">{formatTime(Math.floor(lastScan.timestamp / 1000))}</span>
+            <span className="text-xs xs:text-[11px] text-text-muted">{formatTime(Math.floor(lastScan.timestamp / 1000))}</span>
           </div>
-          <div className="space-y-2 mt-3">
-            <p className="text-sm"><strong>Pesan:</strong> {lastScan.reason}</p>
-            <div className="grid grid-cols-2 gap-4 text-sm bg-background p-3 rounded-md">
+          <div className="space-y-2 mt-3 xs:mt-2">
+            <p className="text-sm xs:text-xs"><strong>Pesan:</strong> {lastScan.reason}</p>
+            <div className="grid grid-cols-2 gap-3 xs:gap-2 text-sm xs:text-xs bg-background p-3 xs:p-2 rounded-md">
               <div>
-                <p className="text-text-muted text-xs">Token ID</p>
+                <p className="text-text-muted text-xs xs:text-[11px]">Token ID</p>
                 <p className="font-mono">{lastScan.tokenId}</p>
               </div>
               <div>
-                <p className="text-text-muted text-xs">Pemilik Tiket</p>
+                <p className="text-text-muted text-xs xs:text-[11px]">Pemilik Tiket</p>
                 <p className="font-mono truncate">{lastScan.holder}</p>
               </div>
             </div>
@@ -267,35 +268,35 @@ export function GateScanner({ eventAddress, isEventRunning }) {
       )}
 
       {/* HISTORY TABLE */}
-      <div className="flex items-center justify-between mt-4">
-        <h3 className="text-heading-md font-semibold text-text-primary">Riwayat Check-In ({scanLogs.length})</h3>
+      <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 mt-4 xs:mt-3">
+        <h3 className="text-heading-md xs:text-heading-sm font-semibold text-text-primary">Riwayat Check-In ({scanLogs.length})</h3>
       </div>
       
       <div className="overflow-x-auto bg-surface border border-border rounded-lg">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm xs:text-xs">
           <thead>
             <tr className="border-b border-border text-left text-text-muted bg-background">
-              <th className="py-3 px-4 font-medium">Waktu</th>
-              <th className="py-3 px-4 font-medium">Token ID</th>
-              <th className="py-3 px-4 font-medium">Status / Pesan</th>
+              <th className="py-2 xs:py-1.5 px-3 xs:px-2 font-medium">Waktu</th>
+              <th className="py-2 xs:py-1.5 px-3 xs:px-2 font-medium">Token ID</th>
+              <th className="py-2 xs:py-1.5 px-3 xs:px-2 font-medium">Status / Pesan</th>
             </tr>
           </thead>
           <tbody>
             {!scanLogs.length ? (
               <tr>
-                <td colSpan="3" className="text-center py-8 text-text-muted">Belum ada tiket yang ter-scan</td>
+                <td colSpan="3" className="text-center py-6 xs:py-4 text-text-muted">Belum ada tiket yang ter-scan</td>
               </tr>
             ) : (
               scanLogs.map((log, idx) => (
                 <tr key={idx} className="border-b border-border/30 hover:bg-background/50 transition-colors">
-                  <td className="py-3 px-4 text-text-muted whitespace-nowrap">
+                  <td className="py-2 xs:py-1.5 px-3 xs:px-2 text-text-muted whitespace-nowrap">
                     {formatTime(Math.floor(log.timestamp / 1000))}
                   </td>
-                  <td className="py-3 px-4 font-mono font-medium">
+                  <td className="py-2 xs:py-1.5 px-3 xs:px-2 font-mono font-medium">
                     #{log.tokenId}
                   </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
+                  <td className="py-2 xs:py-1.5 px-3 xs:px-2">
+                    <div className="flex items-center gap-2 xs:gap-1.5">
                       <div className={`w-2 h-2 rounded-full ${log.valid ? 'bg-success' : 'bg-danger'}`} />
                       <span className={log.valid ? 'text-text-primary' : 'text-danger'}>{log.reason}</span>
                     </div>
@@ -307,14 +308,14 @@ export function GateScanner({ eventAddress, isEventRunning }) {
         </table>
       </div>
 
-      <details className="mt-8 border border-border rounded-lg bg-background">
-        <summary className="p-4 cursor-pointer flex items-center justify-between text-sm font-medium text-text-secondary">
+      <details className="mt-6 xs:mt-4 lg:mt-8 border border-border rounded-lg bg-background">
+        <summary className="p-3 xs:p-4 cursor-pointer flex items-center justify-between text-sm xs:text-xs font-medium text-text-secondary">
           <span>Informasi Debugging Kamera</span>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 xs:w-3.5 xs:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </summary>
-        <div className="p-4 border-t border-border text-xs font-mono text-text-muted space-y-2 overflow-auto">
+        <div className="p-3 xs:p-4 border-t border-border text-xs xs:text-[11px] font-mono text-text-muted space-y-2 overflow-auto">
           <div><strong>Browser:</strong> {getBrowserName()}</div>
           <div><strong>Secure Context (HTTPS):</strong> {String(isSecure)}</div>
           <div><strong>Kamera Aktif:</strong> {String(isCameraActive)}</div>

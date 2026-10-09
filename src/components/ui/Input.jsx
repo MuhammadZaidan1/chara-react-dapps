@@ -3,6 +3,7 @@ export default function Input({
   error, 
   className = '', 
   id, 
+  inputMode,
   ...props 
 }) {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
@@ -16,11 +17,12 @@ export default function Input({
       )}
       <input
         id={inputId}
-        className={`w-full px-4 py-2.5 rounded-lg border bg-surface text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+        className={`w-full px-4 py-2.5 rounded-lg border bg-surface text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-h-[44px] ${
           error ? 'border-danger focus:ring-danger' : 'border-border'
         } ${className}`}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? `${inputId}-error` : undefined}
+        inputMode={inputMode}
         {...props}
       />
       {error && (

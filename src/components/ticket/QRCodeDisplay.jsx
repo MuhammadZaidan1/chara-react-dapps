@@ -18,6 +18,11 @@ export function QRCodeDisplay({
   const [isSigning, setIsSigning] = useState(false);
   const [error, setError] = useState(null);
 
+  // Responsive size calculation
+  const responsiveSize = typeof window !== 'undefined' 
+    ? Math.min(size, window.innerWidth * 0.4, window.innerHeight * 0.3)
+    : size;
+
   const sign = useCallback(async () => {
     if (!walletClient || !qrData) return null;
     
@@ -56,8 +61,8 @@ export function QRCodeDisplay({
 
   if (!qrData) {
     return (
-      <div className="w-[120px] h-[120px] bg-background rounded-lg flex items-center justify-center border border-border">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+      <div className="w-[120px] h-[120px] xs:w-[100px] xs:h-[100px] bg-background rounded-lg flex items-center justify-center border border-border">
+        <div className="animate-spin rounded-full h-8 w-8 xs:h-6 xs:w-6 border-2 border-primary border-t-transparent" />
       </div>
     );
   }
@@ -68,7 +73,7 @@ export function QRCodeDisplay({
         <div className="border-2 border-text-primary rounded-lg p-2 bg-surface badge-brutal">
           <QRCode 
             value={qrData}
-            size={size}
+            size={responsiveSize}
             level="M"
             includeMargin={true}
             bgColor="#FFFFFF"
@@ -76,9 +81,9 @@ export function QRCodeDisplay({
           />
         </div>
         {isSigning && (
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-40 bg-surface rounded-lg shadow-[var(--shadow-modal)] border border-border p-1 text-xs text-text-muted text-center whitespace-nowrap">
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 xs:w-36 bg-surface rounded-lg shadow-[var(--shadow-modal)] border border-border p-1 text-xs xs:text-[11px] text-text-muted text-center whitespace-nowrap">
             <div className="flex items-center justify-center gap-1">
-              <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin w-3 h-3 xs:w-2.5 xs:h-2.5" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
@@ -87,7 +92,7 @@ export function QRCodeDisplay({
           </div>
         )}
         {signature && !isSigning && (
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-40 bg-surface rounded-lg shadow-[var(--shadow-modal)] border border-border p-1 text-xs text-success text-center whitespace-nowrap">
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 xs:w-36 bg-surface rounded-lg shadow-[var(--shadow-modal)] border border-border p-1 text-xs xs:text-[11px] text-success text-center whitespace-nowrap">
             <span>Signed: {shortAddress(signature)}</span>
           </div>
         )}
@@ -97,24 +102,24 @@ export function QRCodeDisplay({
 
   // Full variant - shows QR with sign button
   return (
-    <div className="border-2 border-text-primary rounded-lg p-4 bg-surface badge-brutal flex flex-col items-center gap-3">
+    <div className="border-2 border-text-primary rounded-lg p-3 xs:p-4 bg-surface badge-brutal flex flex-col items-center gap-3 xs:gap-2">
       <QRCode 
         value={qrData}
-        size={size}
+        size={responsiveSize}
         level="M"
         includeMargin={true}
         bgColor="#FFFFFF"
         fgColor="#292524"
       />
       
-      <div className="w-full space-y-2 text-center text-xs">
+      <div className="w-full space-y-2 xs:space-y-1.5 text-center text-xs xs:text-[11px]">
         <div className="font-mono text-text-secondary break-all bg-background px-3 py-2 rounded">
           {qrData}
         </div>
         
         {isSigning && (
-          <div className="flex items-center justify-center gap-2 text-warning">
-            <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <div className="flex items-center justify-center gap-2 xs:gap-1.5 text-warning">
+            <svg className="animate-spin w-4 h-4 xs:w-3.5 xs:h-3.5" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
@@ -123,8 +128,8 @@ export function QRCodeDisplay({
         )}
         
         {signature && !isSigning && (
-          <div className="font-mono text-success text-center flex items-center justify-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="font-mono text-success text-center flex items-center justify-center gap-2 xs:gap-1.5">
+            <svg className="w-4 h-4 xs:w-3.5 xs:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <span>Signed: {shortAddress(signature)}</span>
@@ -146,7 +151,7 @@ export function QRCodeDisplay({
         {error && (
           <div className="text-danger text-center">
             {error}
-            <button onClick={sign} className="text-primary underline text-xs ml-2">
+            <button onClick={sign} className="text-primary underline text-xs xs:text-[11px] ml-2 xs:ml-1">
               Retry
             </button>
           </div>

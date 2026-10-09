@@ -64,16 +64,16 @@ export default function MyTickets() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 xs:mb-4">
         <div>
-          <h1 className="text-display-lg font-display font-bold text-text-primary">
+          <h1 className="text-display-lg xs:text-display-md font-display font-bold text-text-primary">
             My Tickets
           </h1>
-          <p className="text-text-secondary mt-1">
+          <p className="text-text-secondary xs:text-sm mt-1">
             Manage your event tickets and QR codes
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 xs:gap-1.5">
           <Button variant="secondary" size="sm" onClick={handleRefresh}>
             Refresh
           </Button>
@@ -93,30 +93,30 @@ export default function MyTickets() {
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
         </div>
       ) : !tickets?.length ? (
-        <Card className="text-center py-16">
-          <svg className="mx-auto h-16 w-16 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Card className="text-center py-12 xs:py-8">
+          <svg className="mx-auto h-12 w-12 xs:h-10 xs:w-10 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
           </svg>
-          <h3 className="mt-4 text-heading-md text-text-primary">No tickets yet</h3>
-          <p className="mt-2 text-text-secondary">Buy tickets from the Explore page to see them here</p>
+          <h3 className="mt-4 text-heading-md xs:text-heading-sm text-text-primary">No tickets yet</h3>
+          <p className="mt-2 text-text-secondary xs:text-sm">Buy tickets from the Explore page to see them here</p>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 xs:space-y-2">
           {tickets.map((ticket) => (
             <Card 
               key={ticket.tokenId.toString()} 
               className="cursor-pointer hover:shadow-[var(--shadow-modal)] transition-shadow"
               onClick={() => navigate(`/ticket/${ticket.eventAddress}/${ticket.tokenId}`)}
             >
-              <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+              <div className="flex flex-col sm:flex-row gap-4 xs:gap-3 items-start sm:items-center">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-heading-md font-semibold text-text-primary truncate">
+                    <h3 className="text-heading-md xs:text-heading-sm font-semibold text-text-primary truncate">
                       {ticket.tier?.category || 'Unknown'} Pass
                     </h3>
                     <Badge variant="default">{ticket.tier?.phase || 'Unknown'}</Badge>
                   </div>
-                  <div className="flex flex-wrap gap-4 text-sm text-text-secondary">
+                  <div className="flex flex-wrap gap-3 xs:gap-2 text-sm xs:text-xs text-text-secondary">
                     <span className="font-mono">Token #{ticket.tokenId.toString()}</span>
                     <span>Event: {shortAddress(ticket.eventAddress)}</span>
                   </div>

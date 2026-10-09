@@ -10,8 +10,8 @@ export default function Tabs({
 
   return (
     <div className={className}>
-      {/* Tambahin w-full di div ini biar tablist-nya mentok kiri-kanan */}
-      <div className="flex w-full border-b border-border mb-4" role="tablist">
+      {/* Horizontal scroll on mobile, equal width on desktop */}
+      <div className="flex w-full border-b border-border mb-4 overflow-x-auto xs:overflow-visible xs:pb-2 -mb-2 xs:mb-0 whitespace-nowrap" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -23,8 +23,7 @@ export default function Tabs({
               setActiveTab(tab.id);
               onChange?.(tab.id);
             }}
-            // Tambahin flex-1 di sini biar lebarnya kebagi rata
-            className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors text-center ${
+            className={`flex-shrink-0 xs:flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors text-center min-h-[44px] ${
               activeTab === tab.id
                 ? 'border-primary text-primary'
                 : 'border-transparent text-text-muted hover:text-text-primary hover:border-border'

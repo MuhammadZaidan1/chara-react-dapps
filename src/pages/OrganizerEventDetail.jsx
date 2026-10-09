@@ -140,7 +140,7 @@ export default function OrganizerEventDetail() {
         </Link>
 
         {/* Event Header - Side by Side: Image (1/3) + Details (2/3) */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-4 xs:gap-3 lg:gap-6 lg:grid-cols-3">
           {/* Event Image - 1/3 width, square */}
           <div className="lg:col-span-1">
             <div className="aspect-square w-full rounded-xl overflow-hidden bg-background relative">
@@ -152,26 +152,26 @@ export default function OrganizerEventDetail() {
                 />
               ) : (
                 <div className="w-full h-full bg-primary-soft flex items-center justify-center">
-                  <svg className="w-16 h-16 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-20 h-20 xs:w-16 xs:h-16 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
               )}
-              <Badge variant={isSaleOpen ? 'warning' : isEventRunning ? 'success' : 'danger'} className="absolute top-4 left-4 badge-brutal">
+              <Badge variant={isSaleOpen ? 'warning' : isEventRunning ? 'success' : 'danger'} className="absolute top-3 left-3 xs:top-2 xs:left-2 badge-brutal xs:px-2 xs:py-0.5 xs:text-[11px]">
                 {isSaleOpen ? 'Sale Open' : isEventRunning ? 'Live Now' : 'Ended'}
               </Badge>
-              <Badge variant="default" className="absolute top-4 right-4 badge-brutal">
+              <Badge variant="default" className="absolute top-3 right-3 xs:top-2 xs:right-2 badge-brutal xs:px-2 xs:py-0.5 xs:text-[11px]">
                 Organizer View
               </Badge>
             </div>
           </div>
 
           {/* Event Details - 2/3 width */}
-          <div className="lg:col-span-2 space-y-4 pt-2 lg:pl-6">
-            <h1 className="text-display-lg font-display font-bold text-text-primary">{eventName}</h1>
+          <div className="lg:col-span-2 space-y-3 xs:space-y-2 pt-1 lg:pt-2 lg:pl-6">
+            <h1 className="text-display-lg xs:text-display-md font-display font-bold text-text-primary">{eventName}</h1>
             {location && (
-              <p className="text-text-secondary flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <p className="text-text-secondary flex items-center gap-2 xs:gap-1.5">
+<svg className="w-5 h-5 xs:w-4 xs:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -179,13 +179,13 @@ export default function OrganizerEventDetail() {
               </p>
             )}
               {schedule.length > 0 && (
-                <div className="flex items-start gap-2 text-text-secondary">
-                  <svg className="w-5 h-5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-start gap-2 xs:gap-1.5 text-text-secondary">
+                  <svg className="w-5 h-5 xs:w-4 xs:h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <div className="flex flex-col gap-1">
                     {schedule.map((s, idx) => (
-                      <span key={idx}>
+                      <span key={idx} className="text-sm xs:text-xs">
                         {s.date} {s.startTime || '00:00'} - {s.endTime || '23:59'}
                       </span>
                     ))}
@@ -193,28 +193,28 @@ export default function OrganizerEventDetail() {
                 </div>
               )}
             {description && (
-              <p className="text-text-secondary">{description}</p>
+              <p className="text-text-secondary xs:text-sm">{description}</p>
             )}
           </div>
         </div>
 
         {pools && (
-          <div className="grid gap-4 sm:grid-cols-4 mb-6">
-            <div className="bg-background rounded-lg p-4">
-              <p className="text-caption text-text-muted">Primary Pool</p>
-              <p className="font-mono text-text-primary">{formatUSDG(pools.primaryPool)} mUSDG</p>
+          <div className="grid gap-3 xs:gap-2 xs:grid-cols-2 sm:grid-cols-4 mb-6">
+            <div className="bg-background rounded-lg p-3 xs:p-4">
+              <p className="text-caption xs:text-[11px] text-text-muted">Primary Pool</p>
+              <p className="font-mono text-text-primary xs:text-sm">{formatUSDG(pools.primaryPool)} mUSDG</p>
             </div>
-            <div className="bg-background rounded-lg p-4">
-              <p className="text-caption text-text-muted">Secondary Pool</p>
-              <p className="font-mono text-text-primary">{formatUSDG(pools.secondaryPool)} mUSDG</p>
+            <div className="bg-background rounded-lg p-3 xs:p-4">
+              <p className="text-caption xs:text-[11px] text-text-muted">Secondary Pool</p>
+              <p className="font-mono text-text-primary xs:text-sm">{formatUSDG(pools.secondaryPool)} mUSDG</p>
             </div>
-            <div className="bg-background rounded-lg p-4">
-              <p className="text-caption text-text-muted">Primary Revenue</p>
-              <p className="font-mono text-text-primary">{formatUSDG(pools.primaryRevenue)} mUSDG</p>
+            <div className="bg-background rounded-lg p-3 xs:p-4">
+              <p className="text-caption xs:text-[11px] text-text-muted">Primary Revenue</p>
+              <p className="font-mono text-text-primary xs:text-sm">{formatUSDG(pools.primaryRevenue)} mUSDG</p>
             </div>
-            <div className="bg-background rounded-lg p-4">
-              <p className="text-caption text-text-muted">Secondary Revenue</p>
-              <p className="font-mono text-text-primary">{formatUSDG(pools.secondaryRevenue)} mUSDG</p>
+            <div className="bg-background rounded-lg p-3 xs:p-4">
+              <p className="text-caption xs:text-[11px] text-text-muted">Secondary Revenue</p>
+              <p className="font-mono text-text-primary xs:text-sm">{formatUSDG(pools.secondaryRevenue)} mUSDG</p>
             </div>
           </div>
         )}

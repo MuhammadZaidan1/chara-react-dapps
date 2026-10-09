@@ -529,30 +529,13 @@ ABIs extracted to `src/contracts/abis/*.json`
 
 ---
 
-## 🤝 Team
-
-| Role | Name | GitHub | LinkedIn |
-|------|------|--------|----------|
-| **Full Stack / Smart Contracts** | `[PLACEHOLDER]` | `[GitHub]` | `[LinkedIn]` |
-| **Frontend / UX** | `[PLACEHOLDER]` | `[GitHub]` | `[LinkedIn]` |
-| **DevOps / Infra** | `[PLACEHOLDER]` | `[GitHub]` | `[LinkedIn]` |
-
----
-
 ## 🔗 Links
 
-- **Hackathon Submission**: `[PLACEHOLDER: Devpost / Hackathon Page URL]`
-- **Pitch Deck**: `[PLACEHOLDER: Google Slides / Notion Link]`
-- **Demo Video**: `[PLACEHOLDER: YouTube / Loom Link]`
-- **Smart Contract Repo**: `[PLACEHOLDER: GitHub Repo for Contracts]`
-- **Frontend Repo**: `[PLACEHOLDER: This Repo URL]`
+- **Smart Contract Repo**: [`@RajaswaRai/smart_ticket_contracts`](https://github.com/RajaswaRai/smart_ticket_contracts)
+- **Dapps Repo**: [`@MuhammadZaidan1/chara-react-dapps`](https://github.com/MuhammadZaidan1/chara-react-dapps)
 
 ---
 
 ## 📝 License
 
 MIT License — see `LICENSE` file (add if needed).
-
----
-
-> **Built for [HACKATHON NAME]** — RWA Ticketing on Robinhood Chain Testnet
